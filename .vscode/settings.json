@@ -9,5 +9,8 @@
 		"QueryGuildBankTab",
 		"SlashCmdList",
 		"CreateFrame",
+	],
+	"Lua.diagnostics.disable": [
+		"lowercase-global"
 	]
 }
