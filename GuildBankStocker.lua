@@ -20,7 +20,7 @@ local SHOPPINGLIST = {
 	["Flask of Steelskin"] = 3 * 21,
 	["Flask of the Winds"] = 3 * 21,
 	["Flask of Titanic Strength"] = 3 * 21,
-	["Flask of the Draconic Mind"] = 3 * 28
+	["Flask of the Draconic Mind"] = 3 * 35
 }
 
 local FRAME_NAME = "Shoppinglist"
@@ -29,11 +29,11 @@ local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_LOGIN")
 f:SetScript("OnEvent", function(self, event)
 	if (event == "PLAYER_LOGIN") then
-		close_chatframe()
+		CloseChatFrame()
 	elseif (event == "GUILDBANKBAGSLOTS_CHANGED") then
 		f["WAITCOUNT"] = f["WAITCOUNT"] - 1
 		if (f["WAITCOUNT"] == 0) then
-			print_difference(scan_gbank())
+			print_difference(GbankInventory())
 			f:UnregisterEvent("GUILDBANKBAGSLOTS_CHANGED")
 		end
 	end
@@ -42,7 +42,7 @@ end)
 SlashCmdList["STOCKER"] = function(_msg)
 	f["WAITCOUNT"] = 0;
 	f:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED")
-	poll_gbank()
+	GbankGet()
 end
 
 function print_difference(storage)
@@ -51,11 +51,11 @@ function print_difference(storage)
 		local missing = 0
 		local link
 		if storage[demandName] then
-			missing = demantCount - storage[demandName][2]
-			link = storage[demandName][1]
+			missing = demantCount - storage[demandName]["count"]
+			link = storage[demandName]["link"]
 		else
 			missing = demantCount
-			link = GetItemInfo(demandName)[2]
+			link = GetItemInfo(demandName)["count"]
 			if link == nil then
 				link = demandName
 			end
@@ -78,7 +78,7 @@ function print_difference(storage)
 	end
 end
 
-function poll_gbank()
+function GbankGet()
 	for localtab = 1, GetNumGuildBankTabs() do
 		if (select(3, GetGuildBankTabInfo(localtab))) then
 			QueryGuildBankTab(localtab)
@@ -87,18 +87,23 @@ function poll_gbank()
 	end
 end
 
-function scan_gbank()
+function GbankInventory()
 	local contents = {}
 	for tab = 1, GetNumGuildBankTabs() do
-		for i = 1, 98 do
-			local link = GetGuildBankItemLink(tab, i)
+		for slot = 1, 98 do
+			local link = GetGuildBankItemLink(tab, slot)
+
 			if link then
 				local name = GetItemInfo(link)
-				local _, count = GetGuildBankItemInfo(tab, i)
+				local _, count = GetGuildBankItemInfo(tab, slot)
+
 				if contents[name] then
-					contents[name][2] = contents[name][2] + count
+					contents[name]["count"] = contents[name]["count"] + count
 				else
-					contents[name] = { link, count }
+					contents[name] = {
+						["link"] = link,
+						["count"] = count,
+					}
 				end
 			end
 		end
@@ -106,7 +111,7 @@ function scan_gbank()
 	return contents
 end
 
-function close_chatframe()
+function CloseChatFrame()
 	for i = 1, NUM_CHAT_WINDOWS do
 		local name = FCF_GetChatWindowInfo(i)
 		if (name == FRAME_NAME) then
