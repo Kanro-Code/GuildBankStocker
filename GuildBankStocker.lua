@@ -25,25 +25,24 @@ local SHOPPINGLIST = {
 
 local FRAME_NAME = "Shoppinglist"
 
-local WAITCOUNT = 0;
-local f1 = CreateFrame("Frame")
-f1:RegisterEvent("PLAYER_LOGIN")
-f1:SetScript("OnEvent", function(self, event)
-	close_chatframe()
+local f = CreateFrame("Frame")
+f:RegisterEvent("PLAYER_LOGIN")
+f:SetScript("OnEvent", function(self, event)
+	if (event == "PLAYER_LOGIN") then
+		close_chatframe()
+	elseif (event == "GUILDBANKBAGSLOTS_CHANGED") then
+		f["WAITCOUNT"] = f["WAITCOUNT"] - 1
+		if (f["WAITCOUNT"] == 0) then
+			print_difference(scan_gbank())
+			f:UnregisterEvent("GUILDBANKBAGSLOTS_CHANGED")
+		end
+	end
 end)
 
 SlashCmdList["STOCKER"] = function(_msg)
-	WAITCOUNT = 0;
+	f["WAITCOUNT"] = 0;
+	f:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED")
 	poll_gbank()
-
-	local f2 = CreateFrame("Frame")
-	f2:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED")
-	f2:SetScript("OnEvent", function(self, event)
-		WAITCOUNT = WAITCOUNT - 1
-		if (WAITCOUNT == 0) then
-			print_difference(scan_gbank())
-		end
-	end)
 end
 
 function print_difference(storage)
@@ -83,14 +82,14 @@ function poll_gbank()
 	for localtab = 1, GetNumGuildBankTabs() do
 		if (select(3, GetGuildBankTabInfo(localtab))) then
 			QueryGuildBankTab(localtab)
-			WAITCOUNT = WAITCOUNT + 1
+			f["WAITCOUNT"] = f["WAITCOUNT"] + 1
 		end
 	end
 end
 
 function scan_gbank()
 	local contents = {}
-	for tab = 1, 3 do
+	for tab = 1, GetNumGuildBankTabs() do
 		for i = 1, 98 do
 			local link = GetGuildBankItemLink(tab, i)
 			if link then
