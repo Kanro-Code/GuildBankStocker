@@ -112,6 +112,5 @@ function close_chatframe()
 		if (name == FRAME_NAME) then
 			FCF_Close(_G['ChatFrame' .. i])
 		end
-		-- match name then use FCF_Close(_G['ChatFrame' .. i])
 	end
 end
