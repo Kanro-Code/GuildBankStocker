@@ -1,0 +1,13 @@
+{
+	"Lua.diagnostics.globals": [
+		"format",
+		"GetNumGuildBankTabs",
+		"GetGuildBankTabInfo",
+		"GetGuildBankItemLink",
+		"GetItemInfo",
+		"GetGuildBankItemInfo",
+		"QueryGuildBankTab",
+		"SlashCmdList",
+		"CreateFrame",
+	]
+}

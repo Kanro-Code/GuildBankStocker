@@ -1,14 +1,14 @@
 SLASH_STOCKER1 = "/gbs"
 SLASH_STOCKER2 = "/guildbankstocker"
 
-local shoppinglist = {
+local SHOPPINGLIST = {
 	-- tab 1
 	["Potion of the Tol'vir"] = 20 * 21,
 	["Volcanic Potion"] = 20 * 21,
 	["Golemblood Potion"] = 20 * 14,
 	["Mythical Mana Potion"] = 20 * 14,
 	["Earthen Potion"] = 20 * 7,
-	["Potion of Concentration"] = 20 * 7,
+	["Potion of Concentration"] = 20 * 14,
 	-- tab 2
 	["Beer-Basted Crocolisk"] = 20 * 21,
 	["Severed Sagefish Head"] = 20 * 21,
@@ -23,24 +23,25 @@ local shoppinglist = {
 	["Flask of the Draconic Mind"] = 3 * 28
 }
 
-local waitcount = 0;
+local WAITCOUNT = 0;
+
 SlashCmdList["STOCKER"] = function(_msg)
-	waitcount = 0;
+	WAITCOUNT = 0;
 	poll_gbank()
+
+	local f = CreateFrame("Frame")
+	f:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED")
+	f:SetScript("OnEvent", function(self, event)
+		WAITCOUNT = WAITCOUNT - 1
+		if (WAITCOUNT == 0) then
+			print_difference(scan_gbank())
+		end
+	end)
 end
 
-local f = CreateFrame("Frame")
-f:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED")
-f:SetScript("OnEvent", function(self, event)
-	waitcount = waitcount - 1
-	if (waitcount == 0) then
-		print_difference(scan_gbank(), shoppinglist)
-	end
-end)
-
-function print_difference(current, shoppinglist)
-	print("Buy the following:")
-	for name, demand in pairs(shoppinglist) do
+function print_difference(current)
+	local string = {}
+	for name, demand in pairs(SHOPPINGLIST) do
 		local buycount = 0
 		local link
 		if current[name] then
@@ -55,16 +56,26 @@ function print_difference(current, shoppinglist)
 		end
 
 		if buycount > 0 then
-			print(link, " - ", buycount)
+			string[#string+1] = format("%s - %d", link, buycount)
+		end
+	end
+
+	if #string == 0 then
+		print("Nothing to buy")
+		return
+	else 
+		print("Buy the following:")
+		for i = 1, #string do
+			print(string[i])
 		end
 	end
 end
 
 function poll_gbank()
-	for tab = 1, GetNumGuildBankTabs() do
-		if (select(3, GetGuildBankTabInfo(tab))) then
-			QueryGuildBankTab(tab)
-			waitcount = waitcount + 1
+	for localtab = 1, GetNumGuildBankTabs() do
+		if (select(3, GetGuildBankTabInfo(localtab))) then
+			QueryGuildBankTab(localtab)
+			WAITCOUNT = WAITCOUNT + 1
 		end
 	end
 end
