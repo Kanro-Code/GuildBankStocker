@@ -9,6 +9,11 @@
 		"QueryGuildBankTab",
 		"SlashCmdList",
 		"CreateFrame",
+		"FCF_OpenNewWindow",
+		"NUM_CHAT_FRAMES",
+		"FCF_GetChatWindowInfo",
+		"FCF_Close",
+		"NUM_CHAT_WINDOWS"
 	],
 	"Lua.diagnostics.disable": [
 		"lowercase-global"
