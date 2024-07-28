@@ -107,7 +107,6 @@ function scan_gbank()
 end
 
 function close_chatframe()
-	print("CLOSING CHAT FRAME", NUM_CHAT_WINDOWS)
 	for i = 1, NUM_CHAT_WINDOWS do
 		local name = FCF_GetChatWindowInfo(i)
 		if (name == FRAME_NAME) then
