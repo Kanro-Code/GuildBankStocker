@@ -23,8 +23,6 @@ local SHOPPINGLIST = {
 	["Flask of the Draconic Mind"] = 3 * 35
 }
 
-local FRAME_NAME = "Shoppinglist"
-
 local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_LOGIN")
 f:SetScript("OnEvent", function(self, event)
@@ -33,7 +31,7 @@ f:SetScript("OnEvent", function(self, event)
 	elseif (event == "GUILDBANKBAGSLOTS_CHANGED") then
 		f["WAITCOUNT"] = f["WAITCOUNT"] - 1
 		if (f["WAITCOUNT"] == 0) then
-			print_difference(GbankInventory())
+			PrintShoppingList()
 			f:UnregisterEvent("GUILDBANKBAGSLOTS_CHANGED")
 		end
 	end
@@ -42,43 +40,38 @@ end)
 SlashCmdList["STOCKER"] = function(_msg)
 	f["WAITCOUNT"] = 0;
 	f:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED")
-	GbankGet()
+	QueryGBank()
 end
 
-function print_difference(storage)
-	local string = { "Buy the following:" }
-	for demandName, demantCount in pairs(SHOPPINGLIST) do
+function PrintShoppingList()
+	local contents = GetGBankContents()
+	local strings = {}
+
+	for shoppingItem, shoppingCount in pairs(SHOPPINGLIST) do
 		local missing = 0
 		local link
-		if storage[demandName] then
-			missing = demantCount - storage[demandName]["count"]
-			link = storage[demandName]["link"]
+		
+		-- Check if item on the shoppinlist is even in the guildbank
+		if contents[shoppingItem] then
+			missing = shoppingCount - contents[shoppingItem]["count"]
+			link = contents[shoppingItem]["link"]
 		else
-			missing = demantCount
-			link = GetItemInfo(demandName)["count"]
+			missing = shoppingCount
+			link = GetItemInfo(shoppingItem)["count"]
+
 			if link == nil then
-				link = demandName
+				link = shoppingItem
 			end
 		end
 
 		if missing > 0 then
-			string[#string + 1] = format("%s - %d", link, missing)
+			strings[#strings + 1] = format("%s - %d", link, missing)
 		end
 	end
-
-	if #string == 1 then
-		print("Nothing to buy")
-		return
-	else
-		local chatframe = FCF_OpenNewWindow(FRAME_NAME)
-		for i = 0, #string do
-			-- print(string[i])
-			chatframe:AddMessage(string[i])
-		end
-	end
+	PrintChatFrame(strings)
 end
 
-function GbankGet()
+function QueryGBank()
 	for localtab = 1, GetNumGuildBankTabs() do
 		if (select(3, GetGuildBankTabInfo(localtab))) then
 			QueryGuildBankTab(localtab)
@@ -87,7 +80,7 @@ function GbankGet()
 	end
 end
 
-function GbankInventory()
+function GetGBankContents()
 	local contents = {}
 	for tab = 1, GetNumGuildBankTabs() do
 		for slot = 1, 98 do
@@ -109,6 +102,21 @@ function GbankInventory()
 		end
 	end
 	return contents
+end
+
+local FRAME_NAME = "Shoppinglist"
+
+function PrintChatFrame(strings)
+	if #strings == 0 then
+		print("Nothing to buy")
+		return
+	end
+
+	local chatframe = FCF_OpenNewWindow(FRAME_NAME)
+	chatframe:AddMessage("Buy the following:")
+	for i = 1, #strings do
+		chatframe:AddMessage(strings[i])
+	end
 end
 
 function CloseChatFrame()
