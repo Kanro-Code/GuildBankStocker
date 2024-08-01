@@ -73,6 +73,7 @@ end
 
 function QueryGBank()
 	for localtab = 1, GetNumGuildBankTabs() do
+		-- Check if your can access a guildbank tab
 		if (select(3, GetGuildBankTabInfo(localtab))) then
 			QueryGuildBankTab(localtab)
 			f["WAITCOUNT"] = f["WAITCOUNT"] + 1
@@ -88,7 +89,7 @@ function GetGBankContents()
 
 			if link then
 				local name = GetItemInfo(link)
-				local _, count = GetGuildBankItemInfo(tab, slot)
+				local count = select(2, GetGuildBankItemInfo(tab, slot))
 
 				if contents[name] then
 					contents[name]["count"] = contents[name]["count"] + count
