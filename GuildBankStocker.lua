@@ -44,7 +44,7 @@ SlashCmdList["STOCKER"] = function(_msg)
 end
 
 function PrintShoppingList()
-	local contents = GetGBankContents()
+	local content = GetGBankContent()
 	local strings = {}
 
 	for shoppingItem, shoppingCount in pairs(SHOPPINGLIST) do
@@ -52,9 +52,9 @@ function PrintShoppingList()
 		local link
 		
 		-- Check if item on the shoppinlist is even in the guildbank
-		if contents[shoppingItem] then
-			missing = shoppingCount - contents[shoppingItem]["count"]
-			link = contents[shoppingItem]["link"]
+		if content[shoppingItem] then
+			missing = shoppingCount - content[shoppingItem]["count"]
+			link = content[shoppingItem]["link"]
 		else
 			missing = shoppingCount
 			link = GetItemInfo(shoppingItem)["count"]
@@ -81,8 +81,8 @@ function QueryGBank()
 	end
 end
 
-function GetGBankContents()
-	local contents = {}
+function GetGBankContent()
+	local content = {}
 	for tab = 1, GetNumGuildBankTabs() do
 		for slot = 1, 98 do
 			local link = GetGuildBankItemLink(tab, slot)
@@ -91,18 +91,14 @@ function GetGBankContents()
 				local name = GetItemInfo(link)
 				local count = select(2, GetGuildBankItemInfo(tab, slot))
 
-				if contents[name] then
-					contents[name]["count"] = contents[name]["count"] + count
-				else
-					contents[name] = {
-						["link"] = link,
-						["count"] = count,
-					}
-				end
+				content[name] = {
+					["link"] = link,
+					["count"] = (content[name] and content[name]["count"] or 0) + count,
+				}
 			end
 		end
 	end
-	return contents
+	return content
 end
 
 local FRAME_NAME = "Shoppinglist"
