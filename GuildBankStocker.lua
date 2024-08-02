@@ -50,7 +50,7 @@ function PrintShoppingList()
 	for shoppingItem, shoppingCount in pairs(SHOPPINGLIST) do
 		local missing = 0
 		local link
-		
+
 		-- Check if item on the shoppinlist is even in the guildbank
 		if content[shoppingItem] then
 			missing = shoppingCount - content[shoppingItem]["count"]
@@ -68,6 +68,7 @@ function PrintShoppingList()
 			strings[#strings + 1] = format("%s - %d", link, missing)
 		end
 	end
+
 	PrintChatFrame(strings)
 end
 
@@ -85,20 +86,33 @@ function GetGBankContent()
 	local content = {}
 	for tab = 1, GetNumGuildBankTabs() do
 		for slot = 1, 98 do
-			local link = GetGuildBankItemLink(tab, slot)
-
-			if link then
-				local name = GetItemInfo(link)
-				local count = select(2, GetGuildBankItemInfo(tab, slot))
-
-				content[name] = {
-					["link"] = link,
-					["count"] = (content[name] and content[name]["count"] or 0) + count,
-				}
-			end
+			ScanGBankSlot(tab, slot, content)
 		end
 	end
+
 	return content
+end
+
+function ScanGBankSlot(tab, slot, content)
+	local link = GetGuildBankItemLink(tab, slot)
+
+	if link then
+		local name = GetItemInfo(link)
+		local count = select(2, GetGuildBankItemInfo(tab, slot))
+
+		AddToContent(link, name, count, content)
+	end
+end
+
+function AddToContent(link, name, count, content)
+	if content[name] then
+		content[name]["count"] = content[name]["count"] + count
+	else
+		content[name] = {
+			["link"] = link,
+			["count"] = count
+		}
+	end
 end
 
 local FRAME_NAME = "Shoppinglist"
