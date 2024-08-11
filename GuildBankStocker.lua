@@ -12,7 +12,7 @@ local SHOPPINGLIST = {
 	-- tab 2
 	["Beer-Basted Crocolisk"] = 20 * 21,
 	["Severed Sagefish Head"] = 20 * 21,
-	["Skewered Eel"] = 20 * 14,
+	["Skewered Eel"] = 20 * 21,
 	["Lavascale Minestrone"] = 20 * 14,
 	["Crocolisk Au Gratin"] = 20 * 7,
 	["Grilled Dragon"] = 20 * 7,
