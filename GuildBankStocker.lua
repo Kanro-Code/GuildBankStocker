@@ -11,7 +11,7 @@ local SHOPPINGLIST = {
 	["Potion of Concentration"] = 20 * 14,
 	-- tab 2
 	["Beer-Basted Crocolisk"] = 20 * 21,
-	["Severed Sagefish Head"] = 20 * 21,
+	["Severed Sagefish Head"] = 20 * 28,
 	["Skewered Eel"] = 20 * 21,
 	["Lavascale Minestrone"] = 20 * 14,
 	["Crocolisk Au Gratin"] = 20 * 7,
@@ -20,7 +20,13 @@ local SHOPPINGLIST = {
 	["Flask of Steelskin"] = 3 * 21,
 	["Flask of the Winds"] = 3 * 21,
 	["Flask of Titanic Strength"] = 3 * 21,
-	["Flask of the Draconic Mind"] = 3 * 35
+	["Flask of the Draconic Mind"] = 3 * 35,
+	-- tab 5
+	["Hypnotic Dust"] = 20 * 14,
+	["Heavenly Shard"] = 20 * 3,
+	["Maelstrom Crystal"] = 20 * 2,
+	["Greater Celestial Essence"] = 10 * 7,
+
 }
 
 local f = CreateFrame("Frame")
