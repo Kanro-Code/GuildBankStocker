@@ -1,6 +1,4 @@
-SLASH_STOCKER1 = "/gbs"
-SLASH_STOCKER2 = "/guildbankstocker"
-
+-- GuildBankStocker
 local SHOPPINGLIST = {
 	-- tab 1
 	["Potion of the Tol'vir"] = 20 * 21,
@@ -26,47 +24,31 @@ local SHOPPINGLIST = {
 	["Heavenly Shard"] = 20 * 3,
 	["Maelstrom Crystal"] = 20 * 2,
 	["Greater Celestial Essence"] = 10 * 7,
-
 }
 
+-- Global frame
 local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_LOGIN")
-f:SetScript("OnEvent", function(self, event)
-	if (event == "PLAYER_LOGIN") then
-		CloseChatFrame()
-	elseif (event == "GUILDBANKBAGSLOTS_CHANGED") then
-		f["WAITCOUNT"] = f["WAITCOUNT"] - 1
-		if (f["WAITCOUNT"] == 0) then
-			PrintShoppingList()
-			f:UnregisterEvent("GUILDBANKBAGSLOTS_CHANGED")
-		end
-	end
-end)
 
-SlashCmdList["STOCKER"] = function(_msg)
-	f["WAITCOUNT"] = 0;
-	f:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED")
-	QueryGBank()
-end
 
-function PrintShoppingList()
-	local content = GetGBankContent()
+function PrintMissingItems()
+	local current = GetGBankContent()
 	local strings = {}
 
-	for shoppingItem, shoppingCount in pairs(SHOPPINGLIST) do
+	for name, count in pairs(SHOPPINGLIST) do
 		local missing = 0
 		local link
 
 		-- Check if item on the shoppinlist is even in the guildbank
-		if content[shoppingItem] then
-			missing = shoppingCount - content[shoppingItem]["count"]
-			link = content[shoppingItem]["link"]
+		if current[name] then
+			missing = count - current[name].count
+			link = current[name].link
 		else
-			missing = shoppingCount
-			link = GetItemInfo(shoppingItem)["count"]
+			missing = count
+			link = GetItemInfo(name).count
 
 			if link == nil then
-				link = shoppingItem
+				link = name
 			end
 		end
 
@@ -83,7 +65,7 @@ function QueryGBank()
 		-- Check if your can access a guildbank tab
 		if (select(3, GetGuildBankTabInfo(localtab))) then
 			QueryGuildBankTab(localtab)
-			f["WAITCOUNT"] = f["WAITCOUNT"] + 1
+			f.waitcount = f.waitcount + 1
 		end
 	end
 end
@@ -112,7 +94,7 @@ end
 
 function AddToContent(link, name, count, content)
 	if content[name] then
-		content[name]["count"] = content[name]["count"] + count
+		content[name].count = content[name].count + count
 	else
 		content[name] = {
 			["link"] = link,
@@ -144,3 +126,35 @@ function CloseChatFrame()
 		end
 	end
 end
+
+local function HandleGuildBankSlotsChanged(self)
+	self.waitcount = self.waitcount - 1
+	if (self.waitcount == 0) then
+		PrintMissingItems()
+		f:UnregisterEvent("GUILDBANKBAGSLOTS_CHANGED")
+	end
+end
+
+
+-- Generic even handler
+local eventHandlers = {
+	PLAYER_LOGIN = CloseChatFrame,
+	GUILDBANKBAGSLOTS_CHANGED = HandleGuildBankSlotsChanged,
+}
+
+f:SetScript("OnEvent", function(self, event)
+	local handler = eventHandlers[event]
+	if handler then
+		handler(self)
+	end
+end)
+
+-- Slash command registration
+SlashCmdList["STOCKER"] = function(_msg)
+	f.waitcount = 0;
+	f:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED")
+	QueryGBank()
+end
+
+SLASH_STOCKER1 = "/gbs"
+SLASH_STOCKER2 = "/guildbankstocker"
