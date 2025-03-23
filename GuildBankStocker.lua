@@ -45,7 +45,13 @@ function PrintMissingItems()
 			link = current[name].link
 		else
 			missing = count
-			link = GetItemInfo(name).count
+			item = GetItemInfo(name)
+
+			if item == nil then
+				link = name
+			end
+
+			link = item.count
 
 			if link == nil then
 				link = name
